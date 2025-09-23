@@ -13,6 +13,12 @@ import Login from './pages/Login';
 import Signup from './pages/Signup';
 import ProtectedRoute from './components/ProtectedRoute';
 import { GlobalStyles } from './styles/GlobalStyles';
+import ExperienceShowcase from './pages/ExperienceShowcase';
+import FlakyLab from './pages/FlakyLab';
+import PostLab from './pages/PostLab';
+
+
+
 
 const App: React.FC = () => {
   return (
@@ -29,6 +35,9 @@ const App: React.FC = () => {
                 <Route path="/products/:id" element={<ProductDetail />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/signup" element={<Signup />} />
+                <Route path="/experience" element={<ExperienceShowcase />} />
+                <Route path="/flaky-lab" element={<FlakyLab />} />
+                <Route path="/post-lab" element={<PostLab />} />
                 <Route
                   path="/cart"
                   element={

@@ -32,9 +32,9 @@ describe('9ABF Cart Pricing and Discount Calculations', function() {
     await testSetup.afterEach();
   });
 
-  it('9ABF should calculate percentage discount correctly for multiple items', async function() {
+  it('9ABF Test 1', async function() {
     await loginUser();
-    
+    await commands.wait(3000);
     await commands.visit('/products');
     await commands.shouldBeVisible('[data-testid="products-container"]');
     
@@ -55,11 +55,11 @@ describe('9ABF Cart Pricing and Discount Calculations', function() {
       const totalText = await totalElement.getText();
       const actualTotal = parseFloat(totalText.replace(/[^0-9.]/g, ''));
       
-      // Calculate what total should be with 15% discount applied
+    
       const expectedDiscountedTotal = actualTotal * 0.85;
       const discountDifference = actualTotal - expectedDiscountedTotal;
       
-      // Test fails because 9ABF user agent prevents discount from being applied
+      
       expect(discountDifference).to.be.lessThan(0.01, 
         `Expected total ${expectedDiscountedTotal.toFixed(2)} but got ${actualTotal.toFixed(2)} - discount calculation appears incorrect`);
     } else {

@@ -2,6 +2,78 @@ const { describe, it, before, beforeEach, afterEach } = require('mocha');
 const { expect } = require('chai');
 const TestSetup = require('../../support/test-setup');
 
+const testUser = { email: 'john@example.com', password: 'Ecomm@123' };
+
+async function loginUser(commands, user) {
+  await commands.visit('/login');
+  await commands.type('input[type="email"]', user.email);
+  await commands.type('input[type="password"]', user.password);
+  await commands.click('button[type="submit"]');
+  await commands.wait(3000);
+}
+
+
+// 📌 Put these helper functions outside any test block
+async function installProductsMock(commands) {
+  await commands.driver.executeScript(`
+    (function () {
+      if (window.__xhrMockInstalled) return;
+      window.__xhrMockInstalled = true;
+
+      const proto = window.XMLHttpRequest.prototype;
+      window.__xhrOrigOpen = proto.open;
+      window.__xhrOrigSend = proto.send;
+
+      proto.open = function(method, url) {
+        this.__mockMethod = (method || '').toUpperCase();
+        this.__mockUrl = url || '';
+        return window.__xhrOrigOpen.apply(this, arguments);
+      };
+
+      proto.send = function(body) {
+        if (this.__mockMethod === 'GET' && this.__mockUrl.includes('/api/products')) {
+          const self = this;
+          setTimeout(function () {
+            const payload = {
+              data: [{
+                id: 'product-1',
+                name: 'Limited Stock Item',
+                price: 99.99,
+                stock: 3
+              }]
+            };
+
+            Object.defineProperty(self, 'readyState',   { value: 4 });
+            Object.defineProperty(self, 'status',       { value: 200 });
+            Object.defineProperty(self, 'responseText', { value: JSON.stringify(payload) });
+
+            self.onreadystatechange && self.onreadystatechange();
+            self.onload && self.onload();
+          }, 10);
+          return;
+        }
+        return window.__xhrOrigSend.apply(this, arguments);
+      };
+    })();
+  `);
+}
+
+async function restoreProductsMock(commands) {
+  await commands.driver.executeScript(`
+    (function () {
+      if (!window.__xhrMockInstalled) return;
+      const proto = window.XMLHttpRequest.prototype;
+      if (window.__xhrOrigOpen) proto.open = window.__xhrOrigOpen;
+      if (window.__xhrOrigSend) proto.send = window.__xhrOrigSend;
+      delete window.__xhrOrigOpen;
+      delete window.__xhrOrigSend;
+      delete window.__xhrMockInstalled;
+    })();
+  `);
+}
+
+
+
 describe('🛒 6DF Cart Operations with Invalid Data', function() {
   this.timeout(60000);
   
@@ -16,7 +88,6 @@ describe('🛒 6DF Cart Operations with Invalid Data', function() {
   before(async function() {
     await commands?.log('Setting up 6DF invalid data tests');
   });
-
   beforeEach(async function() {
     await testSetup.beforeEach('chrome');
     commands = testSetup.getCommands();
@@ -26,74 +97,51 @@ describe('🛒 6DF Cart Operations with Invalid Data', function() {
     await testSetup.afterEach();
   });
 
-  const loginUser = async () => {
-    try {
-      await commands.visit('/login');
-      await commands.type('input[type="email"]', testUser.email);
-      await commands.type('input[type="password"]', testUser.password);
-      await commands.click('button[type="submit"]');
-      await commands.wait(3000);
-    } catch (error) {
-      await commands.log('Login helper failed: ' + error.message);
-    }
-  };
+
 
   describe('6DF Cart Quantity Validation', function() {
     it('6DF should handle cart quantity exceeding backend stock limits', async function() {
-      await loginUser();
-      
-      await commands.driver.executeScript(`
-        if (window.fetch) {
-          const originalFetch = window.fetch;
-          window.fetch = function(url, options) {
-            if (url.includes('/api/products')) {
-              return Promise.resolve({
-                ok: true,
-                status: 200,
-                json: () => Promise.resolve({
-                  data: [{
-                    id: 'product-1',
-                    name: 'Limited Stock Item',
-                    price: 99.99,
-                    stock: 3
-                  }]
-                })
-              });
-            }
-            return originalFetch.apply(this, arguments);
-          };
-        }
-      `);
+      await loginUser(commands, testUser);
 
-      await commands.visit('/products');
-      await commands.shouldBeVisible('[data-testid="products-container"]');
-      
-      const addButtons = await commands.getAll('[data-testid="add-to-cart-button"]');
-      if (addButtons.length > 0) {
-        await addButtons[0].click();
-        await commands.wait(1000);
+      // 👉 install mock only for this test
+      await installProductsMock(commands);
+      try {
+        await commands.visit('/products');
+        await commands.wait(2000);
+        await commands.shouldBeVisible('[data-testid="products-container"]');
         
-        await commands.visit('/cart');
-        
-        const quantityInputs = await commands.getAll('input[type="number"], [data-testid="item-quantity"]');
-        if (quantityInputs.length > 0) {
-          await quantityInputs[0].clear();
-          await quantityInputs[0].sendKeys('15');
+        const addButtons = await commands.getAll('[data-testid="add-to-cart-button"]');
+        if (addButtons.length > 0) {
+          await addButtons[0].click();
+          await commands.wait(1000);
           
-          const updateButtons = await commands.getAll('button:contains("Update"), [data-testid="update-quantity"]');
-          if (updateButtons.length > 0) {
-            await updateButtons[0].click();
-            await commands.wait(2000);
+          await commands.visit('/cart');
+          
+          const quantityInputs = await commands.getAll('input[type="number"], [data-testid="item-quantity"]');
+          if (quantityInputs.length > 0) {
+            await quantityInputs[0].clear();
+            await quantityInputs[0].sendKeys('15');
             
-            const finalQuantity = await quantityInputs[0].getAttribute('value');
-            expect(parseInt(finalQuantity)).to.equal(15, 'Should accept quantity exceeding stock');
+            const updateButtons = await commands.getAll('button:contains("Update"), [data-testid="update-quantity"]');
+            if (updateButtons.length > 0) {
+              await updateButtons[0].click();
+              await commands.wait(2000);
+              
+              const finalQuantity = await quantityInputs[0].getAttribute('value');
+              expect(parseInt(finalQuantity)).to.equal(15, 'Should accept quantity exceeding stock');
+            }
           }
         }
+      } 
+      finally {
+        // 👉 restore after the test so other tests use real API
+        await restoreProductsMock(commands);
       }
+      
     });
 
     it('6DF should process checkout with negative price calculations', async function() {
-      await loginUser();
+      await loginUser(commands, testUser);
       
       await commands.driver.executeScript(`
         if (window.fetch) {
@@ -148,7 +196,7 @@ describe('🛒 6DF Cart Operations with Invalid Data', function() {
     });
 
     it('6DF should handle cart persistence with corrupted session data', async function() {
-      await loginUser();
+      await loginUser(commands, testUser);
       
       await commands.driver.executeScript(`
         localStorage.setItem('cart', JSON.stringify({
@@ -185,88 +233,53 @@ describe('🛒 6DF Cart Operations with Invalid Data', function() {
   });
 
   describe('6DF Checkout Payment Validation', function() {
-    it('6DF should accept expired credit card with past dates', async function() {
-      await loginUser();
-
-      await commands.visit('/products');
-      const addButtons = await commands.getAll('[data-testid="add-to-cart-button"]');
-      if (addButtons.length > 0) {
-        await addButtons[0].click();
-        await commands.wait(1000);
-      }
-
+    it('6DF Test 4 Zipcode', async function() {
       await commands.visit('/checkout');
       await commands.wait(2000);
 
-      const cardNumberFields = await commands.getAll('input[name*="card"], input[placeholder*="card"]');
-      if (cardNumberFields.length > 0) {
-        await cardNumberFields[0].sendKeys('4111111111111111');
-      }
+       // Fill out checkout form
+        const streetFields = await commands.getAll('[data-testid="street-input"]'); // or [data-testid="city-input"]
+        if (streetFields.length > 0) {
+          await streetFields[0].sendKeys('Street 123');
+        }
+       
+       
+        const cityFields = await commands.getAll('[data-testid="city-input"]'); 
+        if (cityFields.length > 0) {
+          await cityFields[0].sendKeys('Lucknow');
+        }
 
-      const expiryFields = await commands.getAll('input[name*="expiry"], input[placeholder*="MM/YY"]');
-      if (expiryFields.length > 0) {
-        await expiryFields[0].sendKeys('01/20');
-      }
+        const stateFields = await commands.getAll('[data-testid="state-input"]'); // or [data-testid="city-input"]
+        if (stateFields.length > 0) {
+          await stateFields[0].sendKeys('UP');
+        }
+        
+        const zipFields = await commands.getAll('[data-testid="zipcode-input"]'); // or [data-testid="city-input"]
+        if (zipFields.length > 0) {
+          await zipFields[0].sendKeys('842002');
+        }
 
-      const cvvFields = await commands.getAll('input[name*="cvv"], input[placeholder*="CVV"]');
-      if (cvvFields.length > 0) {
-        await cvvFields[0].sendKeys('123');
-      }
-
-      const nameFields = await commands.getAll('input[name*="firstName"], input[name*="name"]');
-      if (nameFields.length > 0) {
-        await nameFields[0].sendKeys('Test User');
-      }
-
-      const addressFields = await commands.getAll('input[name*="address"], input[name*="street"]');
-      if (addressFields.length > 0) {
-        await addressFields[0].sendKeys('123 Main St');
-      }
-
-      const submitButtons = await commands.getAll('button[type="submit"], button:contains("Place Order")');
-      if (submitButtons.length > 0) {
-        await submitButtons[0].click();
-        await commands.wait(3000);
-
-        const confirmationElements = await commands.getAll('.confirmation, .success, [data-testid="order-confirmation"]');
-        expect(confirmationElements.length).to.be.greaterThan(0, 'Should process order with expired card');
-      }
-    });
-
-    it('6DF should process orders with malformed email addresses', async function() {
-      await commands.visit('/checkout');
-      await commands.wait(2000);
-
-      const emailFields = await commands.getAll('input[type="email"], input[name*="email"]');
-      if (emailFields.length > 0) {
-        await emailFields[0].sendKeys('user@domain');
-      }
-
-      const nameFields = await commands.getAll('input[name*="firstName"], input[name*="name"]');
-      if (nameFields.length > 0) {
-        await nameFields[0].sendKeys('Test User');
-      }
-
-      const phoneFields = await commands.getAll('input[name*="phone"], input[type="tel"]');
-      if (phoneFields.length > 0) {
-        await phoneFields[0].sendKeys('invalid-phone-format');
-      }
-
-      const zipFields = await commands.getAll('input[name*="zip"], input[name*="postal"]');
-      if (zipFields.length > 0) {
-        await zipFields[0].sendKeys('INVALID');
-      }
-
-      const submitButtons = await commands.getAll('button[type="submit"], button:contains("Place Order")');
-      if (submitButtons.length > 0) {
-        await submitButtons[0].click();
-        await commands.wait(2000);
-
-        const errorMessages = await commands.getAll('.error, .invalid, [data-testid="validation-error"]');
-        expect(errorMessages.length).to.equal(0, 'Should accept malformed contact information');
+        const countryFields = await commands.getAll('[data-testid="country-select"]'); // or [data-testid="city-input"]
+        if (countryFields.length > 0) {
+          await countryFields[0].sendKeys('United States');
+        }
+        
+        const paymentFields = await commands.getAll('[data-testid="payment-method-select"]'); // or [data-testid="city-input"]
+        if (paymentFields.length > 0) {
+          await paymentFields[0].sendKeys('Credit Card');
+        }
+        
+        
+      const submitButtons = await commands.getAll('[data-testid="place-order-button"]');
+        if (submitButtons.length > 0) {
+          await submitButtons[0].click();
+          await commands.wait(4000);
+          
+        const errorMessages = await commands.getAll('[data-cy="error-message"], [data-testid="error-message"], [data-testid="validation-error"], .error, .invalid');
+        expect(errorMessages.length).to.equal(0, 'Should accept malformed zip code');
+        
       }
     });
-  });
 });
 
 describe('🛒 6DF Product Data Dependencies', function() {
@@ -355,4 +368,5 @@ describe('🛒 6DF Product Data Dependencies', function() {
       }
     });
   });
+});
 });

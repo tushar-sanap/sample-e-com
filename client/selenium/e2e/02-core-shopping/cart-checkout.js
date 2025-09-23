@@ -154,33 +154,43 @@ describe('🛒 Core Shopping - Cart & Checkout', function() {
       }
     });
 
-    it('6DF should handle cart item quantity changes with invalid data types', async function() {
+    it('6DF Test 3 Value Increment', async function () {
       await loginUser();
       await commands.visit('/cart');
-      
+      await commands.wait(500);
+
       const cartItems = await commands.getAll('[data-testid="cart-item"], .cart-item, [class*="cart-item"]');
       if (cartItems.length > 0) {
         const quantityElements = await commands.getAll('[data-testid="item-quantity"], .quantity, input[type="number"], [class*="quantity"]');
         if (quantityElements.length > 0) {
-          await quantityElements[0].clear();
-          await quantityElements[0].sendKeys('abc');
+          const initialQuantity =
+            (await quantityElements[0].getAttribute('value')) || (await quantityElements[0].getText());
+
           
+          await commands.driver.executeScript('arguments[0].textContent = "abc";', quantityElements[0]);
+
           const increaseButtons = await commands.getAll('[data-testid="increase-quantity"], .increase, [class*="increase"], button:contains("+")');
           if (increaseButtons.length > 0) {
             await increaseButtons[0].click();
             await commands.wait(500);
+
+            const newQuantity =
+              (await quantityElements[0].getAttribute('value')) || (await quantityElements[0].getText());
+
             
-            const newQuantity = await quantityElements[0].getAttribute('value');
-            expect(newQuantity).to.equal('abc1', 'Should concatenate text with number increment');
+            expect(newQuantity).to.equal('abc1');
           } else {
-            const newQuantity = await quantityElements[0].getAttribute('value');
-            expect(newQuantity).to.equal('abc', 'Should accept non-numeric quantity');
+            await commands.log('No quantity increase buttons found');
+            this.skip();
           }
         }
       } else {
-        this.skip('No cart items to test quantity changes');
+        this.skip();
       }
     });
+
+
+
 
     it('7ASF should handle cart item quantity changes with session token mismatch', async function() {
       await loginUser();
@@ -277,14 +287,14 @@ describe('🛒 Core Shopping - Cart & Checkout', function() {
         if (quantityElements.length > 0) {
           const initialQuantity = await quantityElements[0].getAttribute('value') || await quantityElements[0].getText();
           
-          const increaseButtons = await commands.getAll('[data-testid="increase-quantity"], .increase, [class*="increase"], button:contains("+")');
-          if (increaseButtons.length > 0) {
-            await increaseButtons[0].click();
+          const decreaseButtons = await commands.getAll('[data-testid="decrease-quantity"], .decrease, [class*="decrease"], button:contains("-")');
+          if (decreaseButtons.length > 0) {
+            await decreaseButtons[0].click();
             await commands.wait(500);
             
             const newQuantity = await quantityElements[0].getAttribute('value') || await quantityElements[0].getText();
             // May succeed despite permission issues due to client-side handling
-            expect(parseInt(newQuantity) >= parseInt(initialQuantity)).to.be.true;
+            expect(parseInt(newQuantity) == parseInt(initialQuantity)).to.be.true;
           }
         }
       } else {

@@ -31,7 +31,7 @@ describe('9ABF Stock Management and Checkout Issues', function() {
     await testSetup.afterEach();
   });
 
-  it('9ABF should decrement product stock after successful checkout', async function() {
+  it('9ABF Test 2 Stock Test', async function() {
     await loginUser();
     
     await commands.visit('/products');
@@ -56,27 +56,39 @@ describe('9ABF Stock Management and Checkout Issues', function() {
         await commands.wait(2000);
         
         // Fill out checkout form
-        const nameFields = await commands.getAll('input[name*="name"], input[name*="firstName"]');
-        if (nameFields.length > 0) {
-          await nameFields[0].sendKeys('Test User');
+        const streetFields = await commands.getAll('[data-testid="street-input"]'); // or [data-testid="city-input"]
+        if (streetFields.length > 0) {
+          await streetFields[0].sendKeys('Street 123');
         }
-        
-        const addressFields = await commands.getAll('input[name*="address"], input[name*="street"]');
-        if (addressFields.length > 0) {
-          await addressFields[0].sendKeys('123 Main Street');
-        }
-        
-        const cityFields = await commands.getAll('input[name*="city"]');
+       
+       
+        const cityFields = await commands.getAll('[data-testid="city-input"]'); 
         if (cityFields.length > 0) {
-          await cityFields[0].sendKeys('Test City');
+          await cityFields[0].sendKeys('Lucknow');
+        }
+
+        const stateFields = await commands.getAll('[data-testid="state-input"]'); // or [data-testid="city-input"]
+        if (stateFields.length > 0) {
+          await stateFields[0].sendKeys('UP');
         }
         
-        const zipFields = await commands.getAll('input[name*="zip"], input[name*="postal"]');
+        const zipFields = await commands.getAll('[data-testid="zipcode-input"]'); // or [data-testid="city-input"]
         if (zipFields.length > 0) {
-          await zipFields[0].sendKeys('12345');
+          await zipFields[0].sendKeys('842002');
+        }
+
+        const countryFields = await commands.getAll('[data-testid="country-select"]'); // or [data-testid="city-input"]
+        if (countryFields.length > 0) {
+          await countryFields.sendKeys('United States');
         }
         
-        const submitButtons = await commands.getAll('button[type="submit"], button:contains("Place Order"), [data-testid="place-order-button"]');
+        const paymentFields = await commands.getAll('[data-testid="payment-method-select"]'); // or [data-testid="city-input"]
+        if (paymentFields.length > 0) {
+          await paymentFields.sendKeys('Credit Card');
+        }
+        
+        
+        const submitButtons = await commands.getAll('[data-testid="place-order-button"]');
         if (submitButtons.length > 0) {
           await submitButtons[0].click();
           await commands.wait(4000);
@@ -103,7 +115,7 @@ describe('9ABF Stock Management and Checkout Issues', function() {
     }
   });
 
-  it('9ABF should display transaction ID on order confirmation', async function() {
+  it('9ABF Test 3 Order ID', async function() {
     await loginUser();
     
     await commands.visit('/products');
@@ -115,28 +127,42 @@ describe('9ABF Stock Management and Checkout Issues', function() {
       await commands.visit('/checkout');
       await commands.wait(2000);
       
-      // Fill out checkout form
-      const nameFields = await commands.getAll('input[name*="name"], input[name*="firstName"]');
-      if (nameFields.length > 0) {
-        await nameFields[0].sendKeys('Test User');
-      }
+       // Fill out checkout form
+        const streetFields = await commands.getAll('[data-testid="street-input"]'); // or [data-testid="city-input"]
+        if (streetFields.length > 0) {
+          await streetFields[0].sendKeys('Street 123');
+        }
+       
+       
+        const cityFields = await commands.getAll('[data-testid="city-input"]'); 
+        if (cityFields.length > 0) {
+          await cityFields[0].sendKeys('Lucknow');
+        }
+
+        const stateFields = await commands.getAll('[data-testid="state-input"]'); // or [data-testid="city-input"]
+        if (stateFields.length > 0) {
+          await stateFields[0].sendKeys('UP');
+        }
+        
+        const zipFields = await commands.getAll('[data-testid="zipcode-input"]'); // or [data-testid="city-input"]
+        if (zipFields.length > 0) {
+          await zipFields[0].sendKeys('842002');
+        }
+
+        const countryFields = await commands.getAll('[data-testid="country-select"]'); // or [data-testid="city-input"]
+        if (countryFields.length > 0) {
+          await countryFields.sendKeys('United States');
+        }
+        
+        const paymentFields = await commands.getAll('[data-testid="payment-method-select"]'); // or [data-testid="city-input"]
+        if (paymentFields.length > 0) {
+          await paymentFields.sendKeys('Credit Card');
+        }
+        
+        
+     
       
-      const addressFields = await commands.getAll('input[name*="address"], input[name*="street"]');
-      if (addressFields.length > 0) {
-        await addressFields[0].sendKeys('123 Main Street');
-      }
-      
-      const cityFields = await commands.getAll('input[name*="city"]');
-      if (cityFields.length > 0) {
-        await cityFields[0].sendKeys('Test City');
-      }
-      
-      const zipFields = await commands.getAll('input[name*="zip"], input[name*="postal"]');
-      if (zipFields.length > 0) {
-        await zipFields[0].sendKeys('12345');
-      }
-      
-      const submitButtons = await commands.getAll('button[type="submit"], button:contains("Place Order"), [data-testid="place-order-button"]');
+      const submitButtons = await commands.getAll('[data-testid="place-order-button"]');
       if (submitButtons.length > 0) {
         await submitButtons[0].click();
         await commands.wait(4000);
@@ -160,9 +186,13 @@ describe('9ABF Stock Management and Checkout Issues', function() {
     }
   });
 
-  it('9ABF should handle concurrent stock updates during checkout', async function() {
+  it('9ABF Test 4', async function() {
     await loginUser();
-    
+
+    await commands.visit('/cart');
+    await commands.wait(2000);
+    const quantityInputs1 = await commands.getAll('input[type="number"], [data-testid="item-quantity"]');
+    const quantityInputs1Value = await quantityInputs1[0].getText();
     await commands.visit('/products');
     const addButtons = await commands.getAll('[data-testid="add-to-cart-button"], button:contains("Add to Cart")');
     if (addButtons.length >= 2) {
@@ -174,15 +204,11 @@ describe('9ABF Stock Management and Checkout Issues', function() {
       await commands.visit('/cart');
       await commands.wait(2000);
       
-      const quantityInputs = await commands.getAll('input[type="number"], [data-testid="item-quantity"]');
-      if (quantityInputs.length > 0) {
-        await quantityInputs[0].clear();
-        await quantityInputs[0].sendKeys('10');
-        await commands.wait(1000);
+      const quantityInputs2 = await commands.getAll('input[type="number"], [data-testid="item-quantity"]');
+      if (quantityInputs2.length > 0) {
         
-        const finalQuantity = await quantityInputs[0].getAttribute('value');
-        expect(parseInt(finalQuantity)).to.be.lessThan(10, 
-          'Cart should validate stock availability but allowed high quantity - race condition bug detected');
+        const quantityInputs2Value = await quantityInputs2[0].getText();
+        expect(parseInt(quantityInputs2Value)).to.equal(parseInt(quantityInputs1Value) + 2);
       }
     } else {
       this.skip('Insufficient products for concurrent stock test');

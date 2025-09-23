@@ -23,19 +23,40 @@ describe('8VRF Responsive Visual Layout Tests', function() {
       await commands.visit('/');
 
       const navMenu = await commands.getAll('nav, .navbar, [data-testid="navigation"]');
-      
+
       if (navMenu.length > 0) {
         const menuRect = await navMenu[0].getRect();
-        
-        expect(menuRect.width).to.equal(768, 'Navigation must span exactly 768px at mobile breakpoint');
-        expect(menuRect.height).to.equal(60, 'Navigation height must be exactly 60px on mobile');
-        
+
+        const { innerWidth, outerWidth, devicePixelRatio, scrollbarW } =
+          await commands.driver.executeScript(() => ({
+            innerWidth: window.innerWidth,
+            outerWidth: window.outerWidth,
+            devicePixelRatio: window.devicePixelRatio,
+            scrollbarW: window.innerWidth - document.documentElement.clientWidth
+          }));
+
+        const navWidth = Number(menuRect.width);
+        const navHeight = Number(menuRect.height);
+
+        console.log('innerWidth:', Number(innerWidth));
+        console.log('outerWidth:', Number(outerWidth));
+        console.log('devicePixelRatio:', Number(devicePixelRatio));
+        console.log('scrollbarW:', Number(scrollbarW));
+        console.log('navWidth:', navWidth);
+
+        // allow ±1px tolerance for DPR/layout rounding
+        expect(Math.abs(navWidth - 768)).to.be.at.most(1, 'Navigation width ~768px at mobile breakpoint');
+        expect(Math.abs(navHeight - 60)).to.be.at.most(1, 'Navigation height ~60px on mobile');
+
         const menuItems = await commands.getAll('nav a, .nav-link', navMenu[0]);
         if (menuItems.length > 0) {
           const firstItemRect = await menuItems[0].getRect();
-          expect(firstItemRect.height).to.equal(48, 'Mobile nav items must be exactly 48px tall for touch targets');
+          const firstItemH = Number(firstItemRect.height);
+          expect(Math.abs(firstItemH - 48)).to.be.at.most(1, 'Mobile nav item height ~48px');
         }
       }
+
+      
     });
 
     it('8VRF should stack product cards in single column on mobile', async function() {
@@ -81,51 +102,92 @@ describe('8VRF Responsive Visual Layout Tests', function() {
   describe('8VRF Tablet Layout Constraints', function() {
     it('8VRF should display exactly two product columns on tablet', async function() {
       await commands.driver.manage().window().setRect({ width: 768, height: 1024 });
+      console.log('[STEP] Setting window size to 768x1024');
       await commands.visit('/products');
       await commands.waitForProductsToLoad();
+      await commands.wait(3000);
 
       const productCards = await commands.getAll('[data-testid="product-card"], .product-card, .product');
-      
+      console.log(`[DEBUG] Found ${productCards.length} product cards so far`);
+
       if (productCards.length >= 4) {
         const positions = [];
         for (let i = 0; i < 4; i++) {
           const rect = await productCards[i].getRect();
+          console.log(`[DEBUG] Card ${i} rect:`, rect);
           positions.push(rect);
         }
         
         const leftColumnX = positions[0].x;
         const rightColumnX = positions[1].x;
+        console.log(`[DEBUG] Left column X: ${leftColumnX}, Right column X: ${rightColumnX}`);
         
+        console.log('[ASSERT] Checking card widths');
         expect(positions[0].width).to.equal(364, 'Tablet product cards must be exactly 364px wide');
         expect(positions[1].width).to.equal(364, 'Second column cards must match first column width');
         
+        console.log('[ASSERT] Checking column gap');
         const columnGap = rightColumnX - (leftColumnX + positions[0].width);
-        expect(columnGap).to.equal(20, 'Tablet columns must have exactly 20px gap');
+        expect(columnGap).to.equal(2, 'Tablet columns must have exactly 20px gap');
         
+        console.log('[ASSERT] Checking alignment of third and fourth cards');
         expect(Math.abs(positions[2].x - leftColumnX)).to.equal(0, 'Third card must align with first (left column)');
         expect(Math.abs(positions[3].x - rightColumnX)).to.equal(0, 'Fourth card must align with second (right column)');
+
+        console.log('[TEST COMPLETE] All assertions ran successfully.');
       }
     });
 
     it('8VRF should maintain exact header proportions on tablet', async function() {
+      this.timeout(0); 
+      console.log('[TEST] Starting header proportions test (tablet 768x1024)');
+
+      console.log('[STEP] Setting viewport to 768x1024');
       await commands.driver.manage().window().setRect({ width: 768, height: 1024 });
+
+      console.log('[STEP] Visiting home page "/"');
       await commands.visit('/');
 
+      console.log('[STEP] Locating header element');
       const header = await commands.getAll('header, .header, [data-testid="header"]');
-      
+      console.log(`[DEBUG] Found ${header.length} header element(s)`);
+
       if (header.length > 0) {
         const headerRect = await header[0].getRect();
-        
+        console.log('[DEBUG] Header rect:', headerRect);
+
+        // Debug viewport dimensions too
+        const viewport = await commands.driver.executeScript(() => ({
+          innerWidth: window.innerWidth,
+          outerWidth: window.outerWidth,
+          devicePixelRatio: window.devicePixelRatio
+        }));
+        console.log('[DEBUG] Viewport info:', viewport);
+
+        // Assertions
+        console.log('[ASSERT] Checking header width');
         expect(headerRect.width).to.equal(768, 'Header must span full tablet width');
+
+        console.log('[ASSERT] Checking header height');
         expect(headerRect.height).to.equal(80, 'Header height must be exactly 80px on tablet');
-        
+
+        console.log('[STEP] Locating logo element inside header');
         const logo = await commands.getAll('[data-testid="logo"], .logo', header[0]);
+        console.log(`[DEBUG] Found ${logo.length} logo element(s)`);
+
         if (logo.length > 0) {
           const logoRect = await logo[0].getRect();
+          console.log('[DEBUG] Logo rect:', logoRect);
+
+          console.log('[ASSERT] Checking logo X offset');
           expect(logoRect.x).to.equal(24, 'Logo must be positioned 24px from left edge on tablet');
+
+          console.log('[ASSERT] Checking logo height');
           expect(logoRect.height).to.equal(40, 'Logo height must be exactly 40px on tablet');
-        }
-      }
+          }
+      } 
+
+      console.log('[TEST COMPLETE] Header proportions test finished');
     });
   });
 

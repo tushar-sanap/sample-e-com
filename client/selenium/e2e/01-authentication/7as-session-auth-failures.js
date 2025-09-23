@@ -143,7 +143,7 @@ describe('7ASF Session Authentication Failures', function() {
       await commands.visit('/profile');
       await commands.wait(2000);
       
-      const profileContent = await commands.getAll('.profile, [data-testid="profile"], .user-info');
+      const profileContent = await commands.getAll('.profile, [data-testid="user-greeting"], .user-info');
       expect(profileContent.length).to.be.greaterThan(0);
       
       const storageState = await commands.driver.executeScript(`

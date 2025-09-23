@@ -1,0 +1,26 @@
+const { describe, it, beforeEach, afterEach } = require('mocha');
+const { expect } = require('chai');
+const TestSetup = require('../../support/test-setup');
+
+describe('WH-11', function () {
+  this.timeout(30000);
+  const testSetup = new TestSetup();
+  let commands;
+
+  beforeEach(async () => {
+    await testSetup.beforeEach(process.env.BROWSER || 'chrome');
+    commands = testSetup.getCommands();
+    await commands.visit('/');
+    await commands.driver.executeScript(() => {
+      Object.defineProperty(window, '__token', { value: 'locked', writable: false, configurable: false });
+    });
+  });
+
+  afterEach(async () => { await testSetup.afterEach(); });
+
+  it('WH-11 Test', async () => {
+    await commands.driver.executeScript('window.__token = "open"');
+    const v = await commands.driver.executeScript('return window.__token');
+    expect(v).to.equal('open');
+  });
+});

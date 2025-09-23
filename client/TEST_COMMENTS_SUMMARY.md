@@ -1409,3 +1409,67 @@ This section documents the intentional bugs implemented for targeted 9ABF testin
 - **Coverage**: Bugs span checkout flow, cart management, authentication, and validation
 
 This targeted bug implementation allows for surgical testing of specific failure scenarios while maintaining normal application functionality for regular users and test suites.
+
+
+### To fail the New flaky tests on second attmept , do the following changes: (file path : e2e/07-new/NFT-*.js)
+
+Make them fail on the second run (product change set)
+
+Apply these small changes to FlakyLab.jsx to introduce realistic product regressions. Run the same tests again—they will now fail for clear product reasons.
+
+Filter regression
+
+Original: products.filter(p => (showDiscountedOnly ? p.discounted : true))
+
+Change to: products.filter(p => (showDiscountedOnly ? !p.discounted : true))
+
+Shortlist badge regression
+
+In the shortlist click handler, replace:
+
+sessionStorage.setItem('shortlistCount', String(n));
+
+
+With:
+
+sessionStorage.setItem('favCount', String(n));
+
+
+The badge still reads shortlistCount, so it doesn’t update.
+
+Sorting regression
+
+Replace numeric compare:
+
+return [...filtered].sort((a, b) => a.price - b.price);
+
+
+With a string compare on formatted numbers:
+
+return [...filtered].sort((a, b) => String(a.price.toFixed(2)).localeCompare(String(b.price.toFixed(2))));
+
+
+Coupon total target regression
+
+Change the rendered span from:
+
+<span data-testid="order-total">Total: ${total.toFixed(2)}</span>
+
+
+To:
+
+<span data-testid="grand-total">Total: ${total.toFixed(2)}</span>
+
+
+Leave the tests reading order-total, which no longer updates.
+
+Tab panel hook-up regression
+
+Change the pickup panel’s test id:
+
+data-testid="panel-pickup"
+
+
+To:
+
+data-testid="pickup-panel"

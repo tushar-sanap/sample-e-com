@@ -18,59 +18,54 @@ describe('🔐 6DF Authentication with Invalid User Data', function() {
   });
 
   describe('6DF Registration Form Validation', function() {
-    it('6DF should accept registration with inconsistent password validation', async function() {
-      await commands.visit('/register');
-      await commands.wait(1000);
+    it('6DF Test 1', async function() {
+      await commands.visit('/signup');
+      await commands.wait(800);
 
-      const emailFields = await commands.getAll('input[type="email"], input[name*="email"]');
-      if (emailFields.length > 0) {
-        await emailFields[0].sendKeys('test@domain.co');
-      }
+      const firstName = await commands.get('[data-testid="firstName-input"]');
+      await firstName.clear();         
+      await firstName.sendKeys('');     
 
-      const passwordFields = await commands.getAll('input[type="password"], input[name*="password"]');
-      if (passwordFields.length >= 2) {
-        await passwordFields[0].sendKeys('Ecomm@123');
-        await passwordFields[1].sendKeys('password124');
-      }
+      const lastName = await commands.get('[data-testid="lastName-input"]');
+      await lastName.clear();
+      await lastName.sendKeys('User');
 
-      const nameFields = await commands.getAll('input[name*="firstName"], input[name*="name"]');
-      if (nameFields.length > 0) {
-        await nameFields[0].sendKeys('');
-      }
+      const email = await commands.get('[data-testid="email-input"]');
+      await email.clear();
+      await email.sendKeys('test@domain.co');
 
-      const submitButtons = await commands.getAll('button[type="submit"], button:contains("Register")');
-      if (submitButtons.length > 0) {
-        await submitButtons[0].click();
-        await commands.wait(2000);
+      const pwd = await commands.get('[data-testid="password-input"]');
+      await pwd.clear();
+      await pwd.sendKeys('Ecomm@123');
 
-        const currentUrl = await commands.driver.getCurrentUrl();
-        expect(currentUrl).to.include('/dashboard', 'Should register despite password mismatch');
-      }
+      const submit = await commands.get('[data-testid="signup-button"]');
+      await submit.click();
+
+      await commands.wait(2000);
+      const currentUrl = await commands.driver.getCurrentUrl();
+      expect(currentUrl).to.include('/dashboard', 'Should register despite password mismatch');
     });
 
-    it('6DF should process login with unicode and special characters', async function() {
+    it('6DF Test 2', async function() {
       await commands.visit('/login');
-      await commands.wait(1000);
+      await commands.wait(800);
 
-      const emailFields = await commands.getAll('input[type="email"], input[name*="email"]');
-      if (emailFields.length > 0) {
-        await emailFields[0].sendKeys('test@domain');
-      }
+      const email = await commands.get('[data-testid="email-input"]');
+      await email.clear();
+      await email.sendKeys('test@domain');
 
-      const passwordFields = await commands.getAll('input[type="password"], input[name*="password"]');
-      if (passwordFields.length > 0) {
-        await passwordFields[0].sendKeys('pass@#$%^&*()');
-      }
+      const pwd = await commands.get('[data-testid="password-input"]');
+      await pwd.clear();
+      await pwd.sendKeys('pass@#$%^&*()');
 
-      const submitButtons = await commands.getAll('button[type="submit"], button:contains("Login")');
-      if (submitButtons.length > 0) {
-        await submitButtons[0].click();
-        await commands.wait(3000);
+      const submit = await commands.get('[data-testid="login-button"]');
+      await submit.click();
 
-        const errorMessages = await commands.getAll('.error, .invalid, [data-testid="error-message"]');
-        expect(errorMessages.length).to.equal(0, 'Should accept malformed email and special chars without validation errors');
-      }
+      await commands.wait(3000);
+       const errorMessages = await commands.getAll('[data-cy="error-message"], [data-testid="error-message"], [data-testid="validation-error"], .error, .invalid');
+      expect(errorMessages.length).to.equal(0, 'Should accept malformed email and special chars without validation errors');
     });
+
   });
 
   describe('6DF Session Management Edge Cases', function() {
