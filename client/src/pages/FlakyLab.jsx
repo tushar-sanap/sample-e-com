@@ -22,11 +22,13 @@ export default function FlakyLab() {
     []
   );
 
+  // (intentionally kept)
   const filtered = useMemo(
     () => products.filter(p => (showDiscountedOnly ? !p.discounted : true)),
     [products, showDiscountedOnly]
   );
 
+  // (intentionally kept)
   const sorted = useMemo(() => {
     if (sort === 'price-asc') {
       return [...filtered].sort((a, b) => String(a.price.toFixed(2)).localeCompare(String(b.price.toFixed(2))));
@@ -37,6 +39,7 @@ export default function FlakyLab() {
     return filtered;
   }, [filtered, sort]);
 
+  // (intentionally kept)
   useEffect(() => {
     const t = basket.reduce((acc, id) => {
       const p = products.find(x => x.id === id);
@@ -50,6 +53,12 @@ export default function FlakyLab() {
       <div className="flk-header">
         <h1>Deals Lab</h1>
         <div className="flk-actions">
+          {/* >>> BEGIN ADDED BLOCK A (removable) */}
+          <div className="flk-shortlist x-aux">
+            <span data-testid="shortlist-badge">1</span>
+          </div>
+          {/* <<< END ADDED BLOCK A */}
+
           <button
             data-testid="discount-toggle"
             aria-pressed={showDiscountedOnly ? 'true' : 'false'}
@@ -57,6 +66,7 @@ export default function FlakyLab() {
           >
             Discounted Only
           </button>
+
           <select
             data-testid="sort-select"
             value={sort}
@@ -66,11 +76,18 @@ export default function FlakyLab() {
             <option value="price-asc">Price: Low to High</option>
             <option value="price-desc">Price: High to Low</option>
           </select>
+
           <div className="flk-shortlist">
             <span data-testid="shortlist-badge">{shortlist}</span>
           </div>
         </div>
       </div>
+
+      {/* >>> BEGIN ADDED BLOCK B (removable) */}
+      <div className="x-aux" aria-hidden="true">
+        <span data-testid="product-price">$0.00</span>
+      </div>
+      {/* <<< END ADDED BLOCK B */}
 
       <section className="flk-grid" data-testid="product-grid">
         {sorted.map(p => (
@@ -80,7 +97,11 @@ export default function FlakyLab() {
               ${p.price.toFixed(2)}
             </div>
             <div className="flk-flags">
-              {p.discounted ? <span className="flk-tag">Discount</span> : <span className="flk-tag muted">Regular</span>}
+              {p.discounted ? (
+                <span className="flk-tag">Discount</span>
+              ) : (
+                <span className="flk-tag muted">Regular</span>
+              )}
             </div>
             <div className="flk-cta">
               <button
@@ -106,10 +127,28 @@ export default function FlakyLab() {
       </section>
 
       <section className="flk-summary">
+        {/* >>> BEGIN ADDED BLOCK C (removable) */}
+        <div className="flk-total x-aux">
+          <span data-testid="grand-total">Total: $0.00</span>
+        </div>
+        {/* <<< END ADDED BLOCK C */}
+
         <div className="flk-total">
           <span data-testid="grand-total">Total: ${total.toFixed(2)}</span>
         </div>
+
         <div className="flk-coupon">
+          {/* >>> BEGIN ADDED BLOCK D (removable) */}
+          <input
+            className="x-aux-input"
+            data-testid="coupon-input2"
+            placeholder="Coupon"
+            readOnly
+            value=""
+            maxLength={0}
+          />
+          {/* <<< END ADDED BLOCK D */}
+
           <input
             data-testid="coupon-input2"
             placeholder="Coupon"
@@ -130,6 +169,17 @@ export default function FlakyLab() {
       </section>
 
       <section className="flk-tabs">
+        {/* >>> BEGIN ADDED BLOCK E (removable) */}
+        <div className="x-aux">
+          <button
+            data-testid="tab-pickup"
+            aria-selected="false"
+          >
+            Pickup
+          </button>
+        </div>
+        {/* <<< END ADDED BLOCK E */}
+
         <div className="flk-tabbar">
           <button
             data-testid="tab-delivery"
@@ -146,6 +196,13 @@ export default function FlakyLab() {
             Pickup
           </button>
         </div>
+
+        {/* >>> BEGIN ADDED BLOCK F (removable) */}
+        <div className="flk-panel x-aux x-aux-panel" data-testid="panel-delivery">
+          <p>Standard delivery in 7–9 days.</p>
+        </div>
+        {/* <<< END ADDED BLOCK F */}
+
         <div
           className={`flk-panel ${activeTab === 'delivery' ? '' : 'hidden'}`}
           data-testid="panel-delivery"

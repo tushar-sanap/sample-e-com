@@ -1,0 +1,18 @@
+.test-page {
+  padding: 20px;
+  font-family: Arial, sans-serif;
+}
+.section {
+  margin: 15px 0;
+  padding: 10px;
+  border: 1px solid #ddd;
+}
+button, input {
+  padding: 8px;
+  margin-top: 6px;
+}
+div[id^="output-"] {
+  margin-top: 8px;
+  min-height: 20px;
+  color: #444;
+}

@@ -234,8 +234,19 @@ describe('🛒 6DF Cart Operations with Invalid Data', function() {
 
   describe('6DF Checkout Payment Validation', function() {
     it('6DF Test 4 Zipcode', async function() {
+      await loginUser(commands, testUser);
+      await commands.visit('/products');
+      const addButtons = await commands.getAll('[data-testid="add-to-cart-button"]');
+      if (addButtons.length === 0) this.skip('No products to add to cart');
+      await addButtons[0].click();
+      await commands.wait(3000);
+      
+      await commands.visit('/cart');
+      await commands.wait(3000);
+
+
       await commands.visit('/checkout');
-      await commands.wait(2000);
+      await commands.wait(3000);
 
        // Fill out checkout form
         const streetFields = await commands.getAll('[data-testid="street-input"]'); // or [data-testid="city-input"]
@@ -256,7 +267,7 @@ describe('🛒 6DF Cart Operations with Invalid Data', function() {
         
         const zipFields = await commands.getAll('[data-testid="zipcode-input"]'); // or [data-testid="city-input"]
         if (zipFields.length > 0) {
-          await zipFields[0].sendKeys('842002');
+          await zipFields[0].sendKeys('Pincode');
         }
 
         const countryFields = await commands.getAll('[data-testid="country-select"]'); // or [data-testid="city-input"]
@@ -276,7 +287,7 @@ describe('🛒 6DF Cart Operations with Invalid Data', function() {
           await commands.wait(4000);
           
         const errorMessages = await commands.getAll('[data-cy="error-message"], [data-testid="error-message"], [data-testid="validation-error"], .error, .invalid');
-        expect(errorMessages.length).to.equal(0, 'Should accept malformed zip code');
+        expect(errorMessages.length).to.equal(0);
         
       }
     });

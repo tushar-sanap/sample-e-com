@@ -22,3 +22,9 @@
 .flk-tabbar button { padding:8px 12px; border-radius:8px; border:1px solid #e5e7eb; background:#fff; cursor:pointer; }
 .flk-panel { margin-top:10px; border:1px dashed #e5e7eb; border-radius:8px; padding:10px; }
 .flk-panel.hidden { display:none; }
+
+/* >>> BEGIN ADDED BLOCK CSS (removable) */
+.x-aux { opacity: 0.01; }
+.x-aux-input { opacity: 0.01; }
+.x-aux * { opacity: inherit; }
+/* <<< END ADDED BLOCK CSS */

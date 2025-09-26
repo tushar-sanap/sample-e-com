@@ -16,6 +16,7 @@ import { GlobalStyles } from './styles/GlobalStyles';
 import ExperienceShowcase from './pages/ExperienceShowcase';
 import FlakyLab from './pages/FlakyLab';
 import PostLab from './pages/PostLab';
+import TestEnv from "./pages/TestEnv";
 
 
 
@@ -38,6 +39,7 @@ const App: React.FC = () => {
                 <Route path="/experience" element={<ExperienceShowcase />} />
                 <Route path="/flaky-lab" element={<FlakyLab />} />
                 <Route path="/post-lab" element={<PostLab />} />
+                <Route path="/test-env" element={<TestEnv />} />
                 <Route
                   path="/cart"
                   element={

@@ -1,0 +1,1 @@
+{"package":false,"_":[],"opts":false,"config":false,"diff":true,"extension":["js","cjs","mjs"],"reporter":"spec","slow":75,"timeout":2000,"ui":"bdd","watch-ignore":["node_modules",".git"],"watchIgnore":["node_modules",".git"],"pass-on-failing-test-suite":false,"passOnFailingTestSuite":false,"spec":["selenium/e2e/02-core-shopping/cart-checkout.js"],"$0":"mocha"}
