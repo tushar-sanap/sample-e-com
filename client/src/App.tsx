@@ -17,6 +17,9 @@ import ExperienceShowcase from './pages/ExperienceShowcase';
 import FlakyLab from './pages/FlakyLab';
 import PostLab from './pages/PostLab';
 import TestEnv from "./pages/TestEnv";
+import Wishlist from './pages/Wishlist';
+import CurrencyConverter from './pages/CurrencyConverter';
+import CompareProducts from './pages/CompareProducts';
 
 
 
@@ -40,6 +43,9 @@ const App: React.FC = () => {
                 <Route path="/flaky-lab" caseSensitive={false} element={<FlakyLab />} />
                 <Route path="/post-lab" caseSensitive={false} element={<PostLab />} />
                 <Route path="/test-env" caseSensitive={false} element={<TestEnv />} />
+                <Route path="/wishlist" caseSensitive={false} element={<Wishlist />} />
+                <Route path="/currency" caseSensitive={false} element={<CurrencyConverter />} />
+                <Route path="/compare" caseSensitive={false} element={<CompareProducts />} />
                 <Route
                   path="/cart"
                   element={

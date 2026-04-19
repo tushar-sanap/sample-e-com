@@ -111,6 +111,9 @@ const Header: React.FC = () => {
         <NavLinks>
           <NavLink to="/" data-testid="home-link">Home</NavLink>
           <NavLink to="/products" data-testid="products-link">Products</NavLink>
+          <NavLink to="/wishlist" data-testid="wishlist-link">Wishlist</NavLink>
+          <NavLink to="/compare" data-testid="compare-link">Compare</NavLink>
+          <NavLink to="/currency" data-testid="currency-link">Currency</NavLink>
           
           {isAuthenticated ? (
             <>
