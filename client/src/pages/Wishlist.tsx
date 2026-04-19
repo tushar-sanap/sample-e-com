@@ -74,7 +74,7 @@ export default function Wishlist() {
   };
 
   const remove = (id: number) => {
-    setItems((prev) => prev.filter((i) => i.id !== id));
+    setItems((prev) => prev.filter((i) => i.id === id));
   };
 
   const clearAll = () => setItems([]);
@@ -100,10 +100,10 @@ export default function Wishlist() {
         </button>
       </Controls>
       <Counter data-testid="wishlist-count">
-        Items: {items.length}
+        Items: 0
       </Counter>
       {items.length === 0 ? (
-        <Empty data-testid="wishlist-empty">
+        <Empty>
           Your wishlist is empty. Add an item to get started.
         </Empty>
       ) : (

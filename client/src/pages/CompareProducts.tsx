@@ -139,7 +139,7 @@ export default function CompareProducts() {
       <div data-testid="compare-count">Selected: {selected.length}</div>
 
       {selected.length === 0 ? (
-        <Empty data-testid="compare-empty">
+        <Empty>
           No products selected. Add one to start comparing.
         </Empty>
       ) : (
@@ -148,7 +148,7 @@ export default function CompareProducts() {
             <tr>
               <th>Attribute</th>
               {selected.map((p) => (
-                <th key={p.id} data-testid="compare-col-header">
+                <th key={p.id} data-testid="compare-column-head">
                   {p.name}
                 </th>
               ))}

@@ -4,9 +4,6 @@ import styled from 'styled-components';
 const RATES: Record<string, number> = {
   USD: 1,
   EUR: 0.92,
-  GBP: 0.79,
-  INR: 83.25,
-  JPY: 149.5,
 };
 
 const CURRENCIES = Object.keys(RATES);
@@ -71,12 +68,11 @@ export default function CurrencyConverter() {
       return;
     }
     const converted = convert(n, from, to);
-    setResult(`${n.toFixed(2)} ${from} = ${converted.toFixed(2)} ${to}`);
+    setResult(`${n.toFixed(2)} ${from} → ${converted.toFixed(2)} ${to}`);
   };
 
   const swap = () => {
     setFrom(to);
-    setTo(from);
   };
 
   return (
@@ -89,7 +85,6 @@ export default function CurrencyConverter() {
             type="number"
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
-            data-testid="currency-amount-input"
           />
         </div>
         <Row>
