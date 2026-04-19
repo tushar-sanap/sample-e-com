@@ -31,15 +31,15 @@ const App: React.FC = () => {
             <Header />
             <main>
               <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/products" element={<Products />} />
-                <Route path="/products/:id" element={<ProductDetail />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/signup" element={<Signup />} />
-                <Route path="/experience" element={<ExperienceShowcase />} />
-                <Route path="/flaky-lab" element={<FlakyLab />} />
-                <Route path="/post-lab" element={<PostLab />} />
-                <Route path="/test-env" element={<TestEnv />} />
+                <Route path="/" caseSensitive={false} element={<Home />} />
+                <Route path="/products" caseSensitive={false} element={<Products />} />
+                <Route path="/products/:id" caseSensitive={false} element={<ProductDetail />} />
+                <Route path="/login" caseSensitive={false} element={<Login />} />
+                <Route path="/signup" caseSensitive={false} element={<Signup />} />
+                <Route path="/experience" caseSensitive={false} element={<ExperienceShowcase />} />
+                <Route path="/flaky-lab" caseSensitive={false} element={<FlakyLab />} />
+                <Route path="/post-lab" caseSensitive={false} element={<PostLab />} />
+                <Route path="/test-env" caseSensitive={false} element={<TestEnv />} />
                 <Route
                   path="/cart"
                   element={
