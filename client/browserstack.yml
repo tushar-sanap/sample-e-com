@@ -41,7 +41,7 @@ platforms:
 # Example 1 - If you have configured 3 platforms and set `parallelsPerPlatform` as 2, a total of 6 (2 * 3) parallel threads will be used on BrowserStack
 #
 # Example 2 - If you have configured 1 platform and set `parallelsPerPlatform` as 5, a total of 5 (1 * 5) parallel threads will be used on BrowserStack
-parallelsPerPlatform: 2
+parallelsPerPlatform: 5
 
 # ==========================================
 # BrowserStack Local
@@ -49,19 +49,24 @@ parallelsPerPlatform: 2
 # ==========================================
 # Set browserStackLocal to true if your website under test is not accessible publicly over the internet
 # Learn more about how BrowserStack Local works here -> https://www.browserstack.com/docs/automate/selenium/local-testing-introduction
-browserstackLocal: true # <boolean> (Default false)
-browserStackLocalOptions: # Options to be passed to BrowserStack local in-case of advanced configurations
-  localIdentifier: 'sample-e-com' # <string> (Default: null) Needed if you need to run multiple instances of local.
-  forceLocal: true  # <boolean> (Default: false) Set to true if you need to resolve all your traffic via BrowserStack Local tunnel.
-  # Entire list of arguments available here -> https://www.browserstack.com/docs/automate/selenium/manage-incoming-connections
+# Not needed: the app under test is deployed publicly at
+# https://sample-ecom-client.onrender.com
+browserstackLocal: false # <boolean> (Default false)
+# browserStackLocalOptions: # Options to be passed to BrowserStack local in-case of advanced configurations
+#   localIdentifier: 'sample-e-com' # <string> (Default: null) Needed if you need to run multiple instances of local.
+#   forceLocal: true  # <boolean> (Default: false) Set to true if you need to resolve all your traffic via BrowserStack Local tunnel.
+#   # Entire list of arguments available here -> https://www.browserstack.com/docs/automate/selenium/manage-incoming-connections
 
 # ===================
 # Debugging features
 # ===================
+video: true # <boolean> Session video recording (Default true)
 debug: true # <boolean> # Set to true if you need screenshots for every selenium command ran
-networkLogs: true # <boolean> Set to true to enable HAR logs capturing
 consoleLogs: verbose # <string> Remote browser's console debug levels to be printed (Default: errors)
 # Available options are `disable`, `errors`, `warnings`, `info`, `verbose` (Default: errors)
+networkLogs: true # <boolean> Set to true to enable HAR logs capturing
+seleniumLogs: true # <boolean> Selenium driver logs
+telemetryLogs: true # <boolean> SDK telemetry / instrumentation logs
 # CUSTOM_TAG_<INT>: # <string> (Default: parent folder name of the test file) Custom tag for your test suite
 
 # Test Reporting And Analytics is an intelligent test reporting & debugging product. It collects data using the SDK. Read more about what data is collected at https://www.browserstack.com/docs/test-reporting-and-analytics/references/terms-and-conditions
@@ -69,6 +74,5 @@ consoleLogs: verbose # <string> Remote browser's console debug levels to be prin
 testReporting: true
 
 seleniumVersion: 4.15.0
-seleniumLogs: true
 
 source: sdk:selenium-javascript:node:v1.*

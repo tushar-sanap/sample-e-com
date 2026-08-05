@@ -124,7 +124,9 @@
     "e2e:browserstack": "npx browserstack-cypress run --sync",
     "e2e:browserstack:parallel": "npx browserstack-cypress run --sync --parallels 5",
     "e2e:browserstack:build": "BUILD_NUMBER=$(date +%Y%m%d_%H%M%S) npx browserstack-cypress run --sync",
-    "selenium:browserstack": "npx browserstack-node-sdk mocha selenium/e2e/**/*.js"
+    "selenium:browserstack": "npx browserstack-node-sdk mocha selenium/e2e/**/*.js",
+    "test:deployed": "cross-env BASE_URL=https://sample-ecom-client.onrender.com npx browserstack-node-sdk mocha selenium/e2e/11-deployed/*.js",
+    "test:deployed:api": "mocha selenium/e2e/11-deployed/*.js --grep \"Backend API\""
   },
   "eslintConfig": {
     "extends": [

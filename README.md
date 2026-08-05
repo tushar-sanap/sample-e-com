@@ -137,6 +137,38 @@ npm run test:client
 npm run test:coverage
 ```
 
+#### Smoke-Test the Deployed Version
+A dedicated suite (`client/selenium/e2e/11-deployed/`) runs against the **live
+deployment** instead of a local build — the frontend on Render and the backend
+on Vercel. Run these from the `client/` directory.
+
+Full suite (frontend browser sessions on BrowserStack + backend API checks).
+Browser sessions run through the BrowserStack SDK and appear on the Test
+Reporting & Analytics (TRA) dashboard, same as the other Selenium suites:
+```bash
+cd client
+npm run test:deployed
+# expands to:
+#   BASE_URL=https://sample-ecom-client.onrender.com \
+#     npx browserstack-node-sdk mocha selenium/e2e/11-deployed/*.js
+```
+
+Backend-only API checks (plain Mocha, no browser / no BrowserStack creds — fast
+and CI-friendly):
+```bash
+cd client
+npm run test:deployed:api
+```
+
+Point the suite at a different deployment (e.g. a preview build) via env vars:
+```bash
+BASE_URL=https://your-frontend.onrender.com \
+DEPLOYED_API_URL=https://your-backend.vercel.app \
+  npm run test:deployed
+```
+- `BASE_URL` — deployed **frontend** URL (the app under test in the browser).
+- `DEPLOYED_API_URL` — deployed **backend** base URL (for the API assertions).
+
 ## API Endpoints
 
 ### Authentication
@@ -221,6 +253,75 @@ npm run test:coverage
 - **CORS**: Configured for production domains
 - **Error Handling**: Production-safe error messages
 - **Logging**: Console logging (extensible to proper logging services)
+
+## Deployment
+
+The app is deployed as two independent services:
+
+| Service            | Platform | Live URL                                        |
+| ------------------ | -------- | ----------------------------------------------- |
+| Backend (Express)  | Vercel   | `https://server-puce-gamma-22.vercel.app`       |
+| Frontend (React)   | Render   | `https://sample-ecom-client.onrender.com`       |
+
+Deploy the **backend first** — the frontend bakes the backend URL into its
+bundle at build time, so the backend must exist before the frontend builds.
+
+### Backend → Vercel
+
+The backend is linked to a Vercel project (`server/.vercel/`). From the
+`server/` directory:
+
+```bash
+cd server
+npx vercel          # deploy a preview build
+npx vercel --prod   # promote to production
+```
+
+- **Framework preset**: Express (root directory = `server/`).
+- **Env vars** (set in the Vercel project settings):
+  - `CLIENT_URL` — comma-separated list of extra allowed CORS origins.
+    The deployed Render frontend and its PR previews
+    (`sample-ecom-client(-pr-<n>).onrender.com`) are already allowed in code,
+    so this is only needed for additional origins.
+- **Verify** the production alias after deploying:
+  ```bash
+  curl https://server-puce-gamma-22.vercel.app/health
+  # -> {"status":"OK",...}
+  ```
+  > Note: the per-deployment `*.vercel.app` URL is guarded by Vercel Deployment
+  > Protection and returns a 302. Use the stable **production alias** above (and
+  > for the frontend's `REACT_APP_API_URL`).
+
+### Frontend → Render
+
+The frontend is deployed as a Render **Static Site** described by
+[`render.yaml`](render.yaml) at the repo root (root directory = `client/`).
+
+- **Build command**: `npm ci && npm run build`
+- **Publish path**: `client/build`
+- **SPA routing**: a rewrite of `/*` → `/index.html` so client-side routes
+  survive a refresh/direct hit.
+- **Env vars** (set in Render, baked in at build time — changing them requires a
+  redeploy):
+  - `REACT_APP_API_URL` — deployed backend URL **including the `/api` suffix**,
+    e.g. `https://server-puce-gamma-22.vercel.app/api`.
+  - `CI=false` — the app carries intentional a11y warnings for the test suites;
+    without this, `react-scripts build` would treat them as errors.
+  - `NODE_VERSION=20`.
+
+Render auto-deploys on pushes to `main`. To trigger manually, use
+**Manual Deploy** in the Render dashboard.
+
+### Deployed Endpoints
+
+- **Frontend app**: `https://sample-ecom-client.onrender.com`
+- **Backend base**: `https://server-puce-gamma-22.vercel.app`
+  - Health: `GET /health`
+  - API root: `https://server-puce-gamma-22.vercel.app/api` (see
+    [API Endpoints](#api-endpoints) above for the full route list)
+
+Smoke-test a live deployment with `npm run test:deployed` (see
+[Testing](#testing)).
 
 ## Extending the Application
 
